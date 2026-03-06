@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Rory Triple Crown Overlay</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: transparent;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══════════════════════════════
+     OVERLAY BAR (shown on stream)
+  ═══════════════════════════════ */
+  #overlay {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    width: fit-content;
+  }
+
+  .pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(12, 22, 36, 0.92);
+    border: 1px solid rgba(90, 150, 210, 0.18);
+    border-radius: 8px;
+    padding: 5px 13px 5px 10px;
+    height: 42px;
+    min-width: 135px;
+    transition: min-width 0.2s ease;
+  }
+
+  /* State indicator — blue square (locked/finished) or green play arrow (racing) */
+  .si {
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+  }
+  .si.locked, .si.finished { background: #4a8ecc; }
+  .si.racing {
+    width: 0; height: 0;
+    background: transparent;
+    border-style: solid;
+    border-width: 6px 0 6px 11px;
+    border-color: transparent transparent transparent #22dd44;
+    border-radius: 0;
+  }
+
+  .race-name {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    color: #fff;
+  }
+  .race-name.dim { color: #6a8099; }
+
+  /* Position badge — cyan while racing, orange when finished */
+  .pos-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    padding: 1px 7px 2px;
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+    line-height: 1.45;
+  }
+  .pos-badge.live { background: #1670a8; color: #fff; }
+  .pos-badge.done { background: #d96010; color: #fff; }
+
+  .race-timer {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #22ee55;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  .icon { font-size: 18px; line-height: 1; }
+
+  /* ═══════════════════════════════
+     CONTROL PANEL
+     Hide in OBS with custom CSS:
+       .ctrl-panel { display:none !important; }
+  ═══════════════════════════════ */
+  .ctrl-panel {
+    background: #0b1520;
+    border-top: 1px solid rgba(90, 150, 210, 0.2);
+    color: #c8d4df;
+    padding: 16px;
+    width: 780px;
+    font-size: 13px;
+  }
+
+  .ctrl-panel h2 {
+    color: #22ee55;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 14px;
+  }
+
+  .ctrl-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+
+  .ctrl-card {
+    background: #101e30;
+    border: 1px solid rgba(90, 150, 210, 0.15);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .ctrl-card h3 {
+    color: #4a9ede;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+  }
+
+  .btn-row { display: flex; gap: 5px; margin-bottom: 9px; flex-wrap: wrap; }
+
+  .btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    transition: opacity 0.12s;
+  }
+  .btn:hover  { opacity: 0.82; }
+  .btn:active { opacity: 0.6; }
+  .btn-lock   { background: #3a7ab8; color: #fff; }
+  .btn-start  { background: #1a9930; color: #fff; }
+  .btn-finish { background: #bf5010; color: #fff; }
+  .btn-reset  { background: #2a3a4a; color: #8aaccc; }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 7px;
+  }
+  .row label { color: #607888; min-width: 58px; }
+
+  .pos-input {
+    width: 52px;
+    background: #080f18;
+    border: 1px solid rgba(90, 150, 210, 0.25);
+    color: #fff;
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .ctrl-timer {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #22ee55;
+    letter-spacing: 1px;
+  }
+
+  .hint {
+    color: #3a5568;
+    font-size: 11px;
+    text-align: center;
+    margin-top: 13px;
+    line-height: 1.6;
+  }
+  .hint strong { color: #4a9ede; }
+
+  .state-badge {
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: auto;
+  }
+  .state-badge.locked   { background: #1a3a5a; color: #4a9ede; }
+  .state-badge.racing   { background: #0a3a1a; color: #22ee55; }
+  .state-badge.finished { background: #3a2010; color: #d96010; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     OVERLAY — this is what viewers see on stream
+═══════════════════════════════════════════════ -->
+<div id="overlay">
+  <div class="pill" id="pill-a"></div>
+  <div class="pill" id="pill-b"></div>
+  <div class="pill" id="pill-c"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     CONTROL PANEL
+     In OBS: right-click source → Interact to use.
+     Apply a Crop/Pad filter to hide this from stream,
+     OR add custom CSS:  .ctrl-panel { display:none !important; }
+═══════════════════════════════════════════════ -->
+<div class="ctrl-panel">
+  <h2>🏆 Rory Triple Crown — Controls</h2>
+  <div class="ctrl-grid">
+
+    <!-- Race A -->
+    <div class="ctrl-card">
+      <h3>Race A <span class="state-badge locked" id="badge-a">Locked</span></h3>
+      <div class="btn-row">
+        <button class="btn btn-lock"   onclick="setLocked('a')">🔒 Lock</button>
+        <button class="btn btn-start"  onclick="startRace('a')">▶ Start</button>
+        <button class="btn btn-finish" onclick="finishRace('a')">🏁 Finish</button>
+      </div>
+      <div class="row">
+        <label>Position</label>
+        <input class="pos-input" type="number" id="pos-a" min="1" max="20" value="1">
+        <span id="pos-ord-a" style="color:#8aaccc;font-size:12px;font-weight:700;"></span>
+      </div>
+      <div class="row">
+        <label>Timer</label>
+        <span class="ctrl-timer" id="ctimer-a">00:00:00</span>
+        <button class="btn btn-reset" onclick="resetTimer('a')" style="margin-left:auto" title="Reset timer to 0">↺ Reset</button>
+      </div>
+    </div>
+
+    <!-- Race B -->
+    <div class="ctrl-card">
+      <h3>Race B <span class="state-badge locked" id="badge-b">Locked</span></h3>
+      <div class="btn-row">
+        <button class="btn btn-lock"   onclick="setLocked('b')">🔒 Lock</button>
+        <button class="btn btn-start"  onclick="startRace('b')">▶ Start</button>
+        <button class="btn btn-finish" onclick="finishRace('b')">🏁 Finish</button>
+      </div>
+      <div class="row">
+        <label>Position</label>
+        <input class="pos-input" type="number" id="pos-b" min="1" max="20" value="1">
+        <span id="pos-ord-b" style="color:#8aaccc;font-size:12px;font-weight:700;"></span>
+      </div>
+      <div class="row">
+        <label>Timer</label>
+        <span class="ctrl-timer" id="ctimer-b">00:00:00</span>
+        <button class="btn btn-reset" onclick="resetTimer('b')" style="margin-left:auto" title="Reset timer to 0">↺ Reset</button>
+      </div>
+    </div>
+
+    <!-- Race C -->
+    <div class="ctrl-card">
+      <h3>Race C <span class="state-badge locked" id="badge-c">Locked</span></h3>
+      <div class="btn-row">
+        <button class="btn btn-lock"   onclick="setLocked('c')">🔒 Lock</button>
+        <button class="btn btn-start"  onclick="startRace('c')">▶ Start</button>
+        <button class="btn btn-finish" onclick="finishRace('c')">🏁 Finish</button>
+      </div>
+      <div class="row">
+        <label>Position</label>
+        <input class="pos-input" type="number" id="pos-c" min="1" max="20" value="1">
+        <span id="pos-ord-c" style="color:#8aaccc;font-size:12px;font-weight:700;"></span>
+      </div>
+      <div class="row">
+        <label>Timer</label>
+        <span class="ctrl-timer" id="ctimer-c">00:00:00</span>
+        <button class="btn btn-reset" onclick="resetTimer('c')" style="margin-left:auto" title="Reset timer to 0">↺ Reset</button>
+      </div>
+    </div>
+
+  </div>
+  <p class="hint">
+    In OBS: right-click the Browser Source → <strong>Interact</strong> to open this control panel.<br>
+    Add a <strong>Crop/Pad</strong> filter (bottom crop ~280px) to only show the overlay bar on stream.
+  </p>
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────
+  const races = {
+    a: { state: 'locked', pos: 1, secs: 0, iv: null },
+    b: { state: 'locked', pos: 1, secs: 0, iv: null },
+    c: { state: 'locked', pos: 1, secs: 0, iv: null },
+  };
+
+  // ── Helpers ────────────────────────────────────────────
+  function ordinal(n) {
+    n = parseInt(n) || 1;
+    const s = ['th','st','nd','rd'];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  }
+
+  function pad(v) { return String(v).padStart(2, '0'); }
+
+  function fmtTime(s) {
+    return `${pad(Math.floor(s / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
+  }
+
+  // ── Render pill ────────────────────────────────────────
+  function renderPill(r) {
+    const el  = document.getElementById(`pill-${r}`);
+    const d   = races[r];
+    const lbl = `Race ${r.toUpperCase()}`;
+
+    if (d.state === 'locked') {
+      el.innerHTML = `
+        <span class="si locked"></span>
+        <span class="race-name dim">${lbl}</span>
+        <span class="icon">🔒</span>`;
+
+    } else if (d.state === 'racing') {
+      el.innerHTML = `
+        <span class="si racing"></span>
+        <span class="race-name">${lbl}</span>
+        <span class="pos-badge live">${ordinal(d.pos)}</span>
+        <span class="race-timer">${fmtTime(d.secs)}</span>`;
+
+    } else if (d.state === 'finished') {
+      if (d.pos === 1) {
+        el.innerHTML = `
+          <span class="si finished"></span>
+          <span class="race-name">${lbl}</span>
+          <span class="icon">👑</span>
+          <span class="icon">🏁</span>`;
+      } else {
+        el.innerHTML = `
+          <span class="si finished"></span>
+          <span class="race-name">${lbl}</span>
+          <span class="pos-badge done">${ordinal(d.pos)}</span>
+          <span class="icon">🏁</span>`;
+      }
+    }
+  }
+
+  // ── Update state badge in control panel ───────────────
+  function updateBadge(r) {
+    const el = document.getElementById(`badge-${r}`);
+    const d  = races[r];
+    el.className = `state-badge ${d.state}`;
+    el.textContent = d.state === 'racing' ? 'Racing' : d.state === 'finished' ? 'Finished' : 'Locked';
+  }
+
+  function refreshOrd(r) {
+    document.getElementById(`pos-ord-${r}`).textContent = ordinal(document.getElementById(`pos-${r}`).value);
+  }
+
+  function renderAll() {
+    ['a','b','c'].forEach(r => { renderPill(r); updateBadge(r); refreshOrd(r); });
+  }
+
+  // ── Controls ───────────────────────────────────────────
+  function setLocked(r) {
+    const d = races[r];
+    clearInterval(d.iv); d.iv = null;
+    d.state = 'locked';
+    renderPill(r); updateBadge(r);
+  }
+
+  function startRace(r) {
+    const d = races[r];
+    clearInterval(d.iv);
+    d.state = 'racing';
+    d.pos   = parseInt(document.getElementById(`pos-${r}`).value) || 1;
+    d.iv    = setInterval(() => {
+      d.secs++;
+      document.getElementById(`ctimer-${r}`).textContent = fmtTime(d.secs);
+      renderPill(r);
+    }, 1000);
+    renderPill(r); updateBadge(r);
+  }
+
+  function finishRace(r) {
+    const d = races[r];
+    clearInterval(d.iv); d.iv = null;
+    d.state = 'finished';
+    d.pos   = parseInt(document.getElementById(`pos-${r}`).value) || 1;
+    renderPill(r); updateBadge(r);
+  }
+
+  function resetTimer(r) {
+    const d = races[r];
+    d.secs  = 0;
+    document.getElementById(`ctimer-${r}`).textContent = '00:00:00';
+    renderPill(r);
+  }
+
+  // Live position update while racing / finished
+  ['a','b','c'].forEach(r => {
+    document.getElementById(`pos-${r}`).addEventListener('input', () => {
+      races[r].pos = parseInt(document.getElementById(`pos-${r}`).value) || 1;
+      refreshOrd(r);
+      if (races[r].state !== 'locked') renderPill(r);
+    });
+  });
+
+  // ── Init ───────────────────────────────────────────────
+  renderAll();
+</script>
+</body>
+</html>
