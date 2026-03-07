@@ -108,6 +108,20 @@
     overflow: hidden;
   }
 
+  .flag-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 0 10px 10px 0;
+    padding: 0 14px;
+    height: 100%;
+    margin-left: auto;
+    font-size: 16px;
+    line-height: 1;
+    overflow: hidden;
+  }
+
   .pill-right {
     display: flex;
     align-items: center;
@@ -263,7 +277,7 @@
       </div>
       <div class="row">
         <label>Position</label>
-        <input class="pos-input" type="number" id="pos-a" min="1" max="20" value="1">
+        <input class="pos-input" type="number" id="pos-a" min="1" max="20" value="">
         <span id="pos-ord-a" style="color:#8aaccc;font-size:12px;font-weight:700;"></span>
       </div>
       <div class="row">
@@ -283,7 +297,7 @@
       </div>
       <div class="row">
         <label>Position</label>
-        <input class="pos-input" type="number" id="pos-b" min="1" max="20" value="1">
+        <input class="pos-input" type="number" id="pos-b" min="1" max="20" value="">
         <span id="pos-ord-b" style="color:#8aaccc;font-size:12px;font-weight:700;"></span>
       </div>
       <div class="row">
@@ -303,7 +317,7 @@
       </div>
       <div class="row">
         <label>Position</label>
-        <input class="pos-input" type="number" id="pos-c" min="1" max="20" value="1">
+        <input class="pos-input" type="number" id="pos-c" min="1" max="20" value="">
         <span id="pos-ord-c" style="color:#8aaccc;font-size:12px;font-weight:700;"></span>
       </div>
       <div class="row">
@@ -359,25 +373,23 @@
         <span class="si racing"></span>
         <span class="race-name">${lbl}</span>
         <div class="pill-right">
-          <span class="pos-badge live">${ordinal(d.pos)}</span>
+          ${d.pos ? `<span class="pos-badge live">${ordinal(d.pos)}</span>` : ''}
           <span class="race-timer">${fmtTime(d.secs)}</span>
         </div>`;
 
     } else if (d.state === 'finished') {
       if (d.pos === 1) {
         el.innerHTML = `
+          <span class="si finished"></span>
           <span class="race-name">${lbl}</span>
-          <div class="pill-right">
-            <span class="icon">👑</span>
-            <span class="icon">🏁</span>
-          </div>`;
+          ${d.pos ? `<div class="pill-right"><span class="icon">👑</span></div>` : ''}
+          <span class="flag-box">🏁</span>`;
       } else {
         el.innerHTML = `
+          <span class="si finished"></span>
           <span class="race-name">${lbl}</span>
-          <div class="pill-right">
-            <span class="pos-badge done">${ordinal(d.pos)}</span>
-            <span class="icon">🏁</span>
-          </div>`;
+          ${d.pos ? `<div class="pill-right"><span class="pos-badge done">${ordinal(d.pos)}</span></div>` : ''}
+          <span class="flag-box">🏁</span>`;
       }
     }
   }
@@ -391,7 +403,8 @@
   }
 
   function refreshOrd(r) {
-    document.getElementById(`pos-ord-${r}`).textContent = ordinal(document.getElementById(`pos-${r}`).value);
+    const v = parseInt(document.getElementById(`pos-${r}`).value);
+    document.getElementById(`pos-ord-${r}`).textContent = v ? ordinal(v) : '';
   }
 
   function renderAll() {
@@ -410,7 +423,7 @@
     const d = races[r];
     clearInterval(d.iv);
     d.state = 'racing';
-    d.pos   = parseInt(document.getElementById(`pos-${r}`).value) || 1;
+    d.pos   = parseInt(document.getElementById(`pos-${r}`).value) || 0;
     d.iv    = setInterval(() => {
       d.secs++;
       document.getElementById(`ctimer-${r}`).textContent = fmtTime(d.secs);
@@ -423,7 +436,7 @@
     const d = races[r];
     clearInterval(d.iv); d.iv = null;
     d.state = 'finished';
-    d.pos   = parseInt(document.getElementById(`pos-${r}`).value) || 1;
+    d.pos   = parseInt(document.getElementById(`pos-${r}`).value) || 0;
     renderPill(r); updateBadge(r);
   }
 
@@ -437,7 +450,7 @@
   // Live position update while racing / finished
   ['a','b','c'].forEach(r => {
     document.getElementById(`pos-${r}`).addEventListener('input', () => {
-      races[r].pos = parseInt(document.getElementById(`pos-${r}`).value) || 1;
+      races[r].pos = parseInt(document.getElementById(`pos-${r}`).value) || 0;
       refreshOrd(r);
       if (races[r].state !== 'locked') renderPill(r);
     });
