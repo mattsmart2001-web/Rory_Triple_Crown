@@ -36,8 +36,8 @@
     background: rgba(12, 22, 36, 0.80);
     border: 1px solid rgba(90, 150, 210, 0.18);
     border-radius: 12px;
-    padding: 4px 12px;
-    height: 34px;
+    padding: 0 0 0 10px;
+    height: 38px;
     min-width: 0;
   }
 
@@ -93,6 +93,25 @@
   }
 
   .icon { font-size: 20px; line-height: 1; }
+  .lock-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 0 10px 10px 0;
+    padding: 0 12px;
+    height: 100%;
+    margin-left: auto;
+    font-size: 18px;
+  }
+
+  .pill-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-right: 12px;
+  }
+
 
   /* ═══════════════════════════════
      CONTROL PANEL
@@ -330,26 +349,32 @@
       el.innerHTML = `
         <span class="si locked"></span>
         <span class="race-name dim">${lbl}</span>
-        <span class="icon">🔒</span>`;
+        <span class="lock-box">🔒</span>`;
 
     } else if (d.state === 'racing') {
       el.innerHTML = `
         <span class="si racing"></span>
         <span class="race-name">${lbl}</span>
-        <span class="pos-badge live">${ordinal(d.pos)}</span>
-        <span class="race-timer">${fmtTime(d.secs)}</span>`;
+        <div class="pill-right">
+          <span class="pos-badge live">${ordinal(d.pos)}</span>
+          <span class="race-timer">${fmtTime(d.secs)}</span>
+        </div>`;
 
     } else if (d.state === 'finished') {
       if (d.pos === 1) {
         el.innerHTML = `
           <span class="race-name">${lbl}</span>
-          <span class="icon">👑</span>
-          <span class="icon">🏁</span>`;
+          <div class="pill-right">
+            <span class="icon">👑</span>
+            <span class="icon">🏁</span>
+          </div>`;
       } else {
         el.innerHTML = `
           <span class="race-name">${lbl}</span>
-          <span class="pos-badge done">${ordinal(d.pos)}</span>
-          <span class="icon">🏁</span>`;
+          <div class="pill-right">
+            <span class="pos-badge done">${ordinal(d.pos)}</span>
+            <span class="icon">🏁</span>
+          </div>`;
       }
     }
   }
