@@ -43,6 +43,11 @@
     min-width: 140px;
   }
 
+  .pill.is-locked {
+    background: rgba(12, 22, 36, 0.45);
+    border-color: rgba(90, 150, 210, 0.10);
+  }
+
   /* State indicator — blue square (locked/finished) or green play arrow (racing) */
   .si {
     flex-shrink: 0;
@@ -394,12 +399,14 @@
     const lbl = `RACE ${r.toUpperCase()}`;
 
     if (d.state === 'locked') {
+      el.className = 'pill is-locked';
       el.innerHTML = `
         <span class="si locked"></span>
         <span class="race-name dim">${lbl}</span>
         <span class="lock-box">🔒</span>`;
 
     } else if (d.state === 'racing') {
+      el.className = 'pill';
       el.innerHTML = `
         <span class="si racing"></span>
         <span class="race-name">${lbl}</span>
@@ -409,6 +416,7 @@
         </div>`;
 
     } else if (d.state === 'finished') {
+      el.className = 'pill';
       if (d.pos === 1) {
         el.innerHTML = `
           <span class="si finished"></span>
