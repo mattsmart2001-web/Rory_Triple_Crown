@@ -36,8 +36,8 @@
     background: rgba(12, 22, 36, 0.80);
     border: 1px solid rgba(90, 150, 210, 0.18);
     border-radius: 12px;
-    padding: 6px 14px;
-    height: 44px;
+    padding: 4px 12px;
+    height: 34px;
     min-width: 0;
   }
 
@@ -59,13 +59,13 @@
   }
 
   .race-name {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 700;
     letter-spacing: 0.5px;
     white-space: nowrap;
     color: #ffffff;
   }
-  .race-name.dim { color: #6a8099; }
+  .race-name.dim { color: #ffffff; }
 
   /* Position badge — cyan while racing, orange when finished */
   .pos-badge {
@@ -328,7 +328,7 @@
     if (d.state === 'locked') {
       el.innerHTML = `
         <span class="si locked"></span>
-        <span class="race-name dim">${lbl}</span>
+        <span class="race-name">${lbl}</span>
         <span class="icon">🔒</span>`;
 
     } else if (d.state === 'racing') {
