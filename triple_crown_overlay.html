@@ -120,9 +120,32 @@
     padding: 0 14px;
     height: 100%;
     margin-left: auto;
-    font-size: 20px;
+    font-size: 28px;
     line-height: 1;
     overflow: hidden;
+    position: relative;
+  }
+  .flag-box::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -75%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+      120deg,
+      transparent 0%,
+      rgba(255,255,255,0.18) 50%,
+      transparent 100%
+    );
+    animation: flag-sweep 20s ease-in-out infinite;
+  }
+  @keyframes flag-sweep {
+    0%   { left: -75%; opacity: 0; }
+    2%   { opacity: 1; }
+    15%  { left: 150%; opacity: 1; }
+    17%  { opacity: 0; }
+    100% { left: 150%; opacity: 0; }
   }
 
   .pill-right {
