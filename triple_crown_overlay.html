@@ -61,11 +61,12 @@
   .race-name {
     font-size: 18px;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
     white-space: nowrap;
     color: #ffffff;
   }
-  .race-name.dim { color: #ffffff; }
+  .race-name.dim { color: #6a8099; }
 
   /* Position badge — cyan while racing, orange when finished */
   .pos-badge {
@@ -328,7 +329,7 @@
     if (d.state === 'locked') {
       el.innerHTML = `
         <span class="si locked"></span>
-        <span class="race-name">${lbl}</span>
+        <span class="race-name dim">${lbl}</span>
         <span class="icon">🔒</span>`;
 
     } else if (d.state === 'racing') {
