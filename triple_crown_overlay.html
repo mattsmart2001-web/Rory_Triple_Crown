@@ -475,27 +475,42 @@
     ['a','b','c'].forEach(r => { renderPill(r); updateBadge(r); refreshOrd(r); });
   }
 
-  // ── Controls ───────────────────────────────────────────
-  function setLocked(r) {
-    const d = races[r];
-    clearInterval(d.iv); d.iv = null;
-    d.state = 'locked';
-    renderPill(r); updateBadge(r);
+  // ── Persistence ────────────────────────────────────────
+  function saveState() {
+    const data = {};
+    ['a','b','c'].forEach(r => {
+      data[r] = { state: races[r].state, pos: races[r].pos, secs: races[r].secs, name: races[r].name };
+    });
+    localStorage.setItem('tco_state', JSON.stringify(data));
   }
 
-  function startRace(r) {
+  function startInterval(r) {
     const d = races[r];
     clearInterval(d.iv);
-    d.state = 'racing';
-    d.pos   = parseInt(document.getElementById(`pos-${r}`).value) || 0;
-    d.iv    = setInterval(() => {
+    d.iv = setInterval(() => {
       d.secs++;
       const t = fmtTime(d.secs);
       document.getElementById(`ctimer-${r}`).textContent = t;
       const ot = document.querySelector(`#pill-${r} .race-timer`);
       if (ot) ot.innerHTML = fmtTimeHtml(d.secs);
+      saveState();
     }, 1000);
-    renderPill(r); updateBadge(r);
+  }
+
+  // ── Controls ───────────────────────────────────────────
+  function setLocked(r) {
+    const d = races[r];
+    clearInterval(d.iv); d.iv = null;
+    d.state = 'locked';
+    renderPill(r); updateBadge(r); saveState();
+  }
+
+  function startRace(r) {
+    const d = races[r];
+    d.state = 'racing';
+    d.pos   = parseInt(document.getElementById(`pos-${r}`).value) || 0;
+    startInterval(r);
+    renderPill(r); updateBadge(r); saveState();
   }
 
   function finishRace(r) {
@@ -503,21 +518,21 @@
     clearInterval(d.iv); d.iv = null;
     d.state = 'finished';
     d.pos   = parseInt(document.getElementById(`pos-${r}`).value) || 0;
-    renderPill(r); updateBadge(r);
+    renderPill(r); updateBadge(r); saveState();
   }
 
   function resetTimer(r) {
     const d = races[r];
     d.secs  = 0;
     document.getElementById(`ctimer-${r}`).textContent = '00:00:00';
-    renderPill(r);
+    renderPill(r); saveState();
   }
 
   // Live name update
   ['a','b','c'].forEach(r => {
     document.getElementById(`name-${r}`).addEventListener('input', () => {
       races[r].name = document.getElementById(`name-${r}`).value || `Daily ${r.toUpperCase()}`;
-      renderPill(r);
+      renderPill(r); saveState();
     });
   });
 
@@ -527,20 +542,29 @@
       races[r].pos = parseInt(document.getElementById(`pos-${r}`).value) || 0;
       refreshOrd(r);
       if (races[r].state !== 'locked') renderPill(r);
+      saveState();
     });
   });
 
-
-  // Font load diagnostic — remove when confirmed working
-  document.fonts.ready.then(() => {
-    const loaded = [...document.fonts].map(f => f.family + ' ' + f.weight + ' ' + f.style + ' → ' + f.status);
-    const div = document.createElement('div');
-    div.style.cssText = 'position:fixed;bottom:4px;right:4px;background:#111;color:#0f0;font-size:10px;padding:4px 6px;border-radius:4px;font-family:monospace;z-index:9999;max-width:400px;line-height:1.6';
-    div.textContent = 'Fonts: ' + (loaded.length ? loaded.join(' | ') : 'none');
-    document.body.appendChild(div);
-  });
-
   // ── Init ───────────────────────────────────────────────
+  (function loadState() {
+    try {
+      const data = JSON.parse(localStorage.getItem('tco_state') || 'null');
+      if (!data) return;
+      ['a','b','c'].forEach(r => {
+        if (!data[r]) return;
+        const d = races[r];
+        d.state = data[r].state || 'locked';
+        d.pos   = data[r].pos  || 0;
+        d.secs  = data[r].secs || 0;
+        d.name  = data[r].name || `Daily ${r.toUpperCase()}`;
+        document.getElementById(`name-${r}`).value = d.name;
+        document.getElementById(`pos-${r}`).value  = d.pos || '';
+        document.getElementById(`ctimer-${r}`).textContent = fmtTime(d.secs);
+        if (d.state === 'racing') startInterval(r);
+      });
+    } catch(e) {}
+  })();
   renderAll();
 </script>
 </body>
