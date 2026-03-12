@@ -326,9 +326,14 @@
         <span id="pos-ord-a" style="color:#8aaccc;font-size:12px;font-weight:700;"></span>
       </div>
       <div class="row">
+        <label>Duration</label>
+        <input class="pos-input" type="number" id="dur-a" min="1" max="600" value="60" style="width:60px">
+        <span style="color:#8aaccc;font-size:12px;margin-left:4px">min</span>
+      </div>
+      <div class="row">
         <label>Timer</label>
-        <span class="ctrl-timer" id="ctimer-a">00:00:00</span>
-        <button class="btn btn-reset" onclick="resetTimer('a')" style="margin-left:auto" title="Reset timer to 0">↺ Reset</button>
+        <span class="ctrl-timer" id="ctimer-a">01:00:00</span>
+        <button class="btn btn-reset" onclick="resetTimer('a')" style="margin-left:auto" title="Reset timer">↺ Reset</button>
       </div>
     </div>
 
@@ -350,9 +355,14 @@
         <span id="pos-ord-b" style="color:#8aaccc;font-size:12px;font-weight:700;"></span>
       </div>
       <div class="row">
+        <label>Duration</label>
+        <input class="pos-input" type="number" id="dur-b" min="1" max="600" value="60" style="width:60px">
+        <span style="color:#8aaccc;font-size:12px;margin-left:4px">min</span>
+      </div>
+      <div class="row">
         <label>Timer</label>
-        <span class="ctrl-timer" id="ctimer-b">00:00:00</span>
-        <button class="btn btn-reset" onclick="resetTimer('b')" style="margin-left:auto" title="Reset timer to 0">↺ Reset</button>
+        <span class="ctrl-timer" id="ctimer-b">01:00:00</span>
+        <button class="btn btn-reset" onclick="resetTimer('b')" style="margin-left:auto" title="Reset timer">↺ Reset</button>
       </div>
     </div>
 
@@ -374,9 +384,14 @@
         <span id="pos-ord-c" style="color:#8aaccc;font-size:12px;font-weight:700;"></span>
       </div>
       <div class="row">
+        <label>Duration</label>
+        <input class="pos-input" type="number" id="dur-c" min="1" max="600" value="60" style="width:60px">
+        <span style="color:#8aaccc;font-size:12px;margin-left:4px">min</span>
+      </div>
+      <div class="row">
         <label>Timer</label>
-        <span class="ctrl-timer" id="ctimer-c">00:00:00</span>
-        <button class="btn btn-reset" onclick="resetTimer('c')" style="margin-left:auto" title="Reset timer to 0">↺ Reset</button>
+        <span class="ctrl-timer" id="ctimer-c">01:00:00</span>
+        <button class="btn btn-reset" onclick="resetTimer('c')" style="margin-left:auto" title="Reset timer">↺ Reset</button>
       </div>
     </div>
 
@@ -389,10 +404,11 @@
 
 <script>
   // ── State ──────────────────────────────────────────────
+  const DEFAULT_TARGET = 3600; // 60 minutes default
   const races = {
-    a: { state: 'locked', pos: 0, secs: 0, iv: null, name: 'Daily A' },
-    b: { state: 'locked', pos: 0, secs: 0, iv: null, name: 'Daily B' },
-    c: { state: 'locked', pos: 0, secs: 0, iv: null, name: 'Daily C' },
+    a: { state: 'locked', pos: 0, secs: DEFAULT_TARGET, iv: null, name: 'Daily A', target: DEFAULT_TARGET },
+    b: { state: 'locked', pos: 0, secs: DEFAULT_TARGET, iv: null, name: 'Daily B', target: DEFAULT_TARGET },
+    c: { state: 'locked', pos: 0, secs: DEFAULT_TARGET, iv: null, name: 'Daily C', target: DEFAULT_TARGET },
   };
 
   // ── Helpers ────────────────────────────────────────────
@@ -409,10 +425,15 @@
     return `${pad(Math.floor(s / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
   }
 
+  function timerColor(s) {
+    return s > 1800 ? '#4ac8ff' : '#ff3333';
+  }
+
   function fmtTimeHtml(s) {
     const [h, m, sec] = fmtTime(s).split(':');
-    const ns = 'font-family:ThirdRail,Arial,sans-serif;font-size:2.125vw;font-weight:700;color:#22ee55;letter-spacing:0;display:inline-block;width:3vw;text-align:center;';
-    const ss = 'font-family:Courier New,monospace;font-size:2.125vw;font-weight:700;color:#22ee55;margin:0 0.05vw;';
+    const c = timerColor(s);
+    const ns = `font-family:ThirdRail,Arial,sans-serif;font-size:2.125vw;font-weight:700;color:${c};letter-spacing:0;display:inline-block;width:3vw;text-align:center;`;
+    const ss = `font-family:Courier New,monospace;font-size:2.125vw;font-weight:700;color:${c};margin:0 0.05vw;`;
     const sep = `<span style="${ss}">:</span>`;
     return `<span style="${ns}">${h}</span>${sep}<span style="${ns}">${m}</span>${sep}<span style="${ns}">${sec}</span>`;
   }
@@ -479,7 +500,7 @@
   function saveState() {
     const data = {};
     ['a','b','c'].forEach(r => {
-      data[r] = { state: races[r].state, pos: races[r].pos, secs: races[r].secs, name: races[r].name };
+      data[r] = { state: races[r].state, pos: races[r].pos, secs: races[r].secs, name: races[r].name, target: races[r].target };
     });
     localStorage.setItem('tco_state', JSON.stringify(data));
   }
@@ -488,12 +509,19 @@
     const d = races[r];
     clearInterval(d.iv);
     d.iv = setInterval(() => {
-      d.secs++;
+      if (d.secs > 0) d.secs--;
       const t = fmtTime(d.secs);
-      document.getElementById(`ctimer-${r}`).textContent = t;
+      const ctimer = document.getElementById(`ctimer-${r}`);
+      ctimer.textContent = t;
+      ctimer.style.color = timerColor(d.secs);
       const ot = document.querySelector(`#pill-${r} .race-timer`);
       if (ot) ot.innerHTML = fmtTimeHtml(d.secs);
       saveState();
+      if (d.secs <= 0) {
+        clearInterval(d.iv); d.iv = null;
+        d.state = 'finished';
+        renderPill(r); updateBadge(r); saveState();
+      }
     }, 1000);
   }
 
@@ -509,6 +537,7 @@
     const d = races[r];
     d.state = 'racing';
     d.pos   = parseInt(document.getElementById(`pos-${r}`).value) || 0;
+    if (d.secs <= 0) d.secs = d.target; // restart countdown if expired
     startInterval(r);
     renderPill(r); updateBadge(r); saveState();
   }
@@ -523,8 +552,10 @@
 
   function resetTimer(r) {
     const d = races[r];
-    d.secs  = 0;
-    document.getElementById(`ctimer-${r}`).textContent = '00:00:00';
+    d.secs  = d.target;
+    const ctimer = document.getElementById(`ctimer-${r}`);
+    ctimer.textContent = fmtTime(d.secs);
+    ctimer.style.color = timerColor(d.secs);
     renderPill(r); saveState();
   }
 
@@ -546,6 +577,21 @@
     });
   });
 
+  // Duration input — update target; if locked, also reset secs to new target
+  ['a','b','c'].forEach(r => {
+    document.getElementById(`dur-${r}`).addEventListener('input', () => {
+      const mins = parseFloat(document.getElementById(`dur-${r}`).value) || 60;
+      races[r].target = Math.max(1, Math.round(mins * 60));
+      if (races[r].state === 'locked') {
+        races[r].secs = races[r].target;
+        const ctimer = document.getElementById(`ctimer-${r}`);
+        ctimer.textContent = fmtTime(races[r].secs);
+        ctimer.style.color = timerColor(races[r].secs);
+      }
+      saveState();
+    });
+  });
+
   // ── Init ───────────────────────────────────────────────
   (function loadState() {
     try {
@@ -554,17 +600,26 @@
       ['a','b','c'].forEach(r => {
         if (!data[r]) return;
         const d = races[r];
-        d.state = data[r].state || 'locked';
-        d.pos   = data[r].pos  || 0;
-        d.secs  = data[r].secs || 0;
-        d.name  = data[r].name || `Daily ${r.toUpperCase()}`;
+        d.state  = data[r].state  || 'locked';
+        d.pos    = data[r].pos    || 0;
+        d.target = data[r].target || DEFAULT_TARGET;
+        d.secs   = data[r].secs  != null ? data[r].secs : d.target;
+        d.name   = data[r].name  || `Daily ${r.toUpperCase()}`;
         document.getElementById(`name-${r}`).value = d.name;
         document.getElementById(`pos-${r}`).value  = d.pos || '';
-        document.getElementById(`ctimer-${r}`).textContent = fmtTime(d.secs);
+        document.getElementById(`dur-${r}`).value  = Math.round(d.target / 60);
+        const ctimer = document.getElementById(`ctimer-${r}`);
+        ctimer.textContent = fmtTime(d.secs);
+        ctimer.style.color = timerColor(d.secs);
         if (d.state === 'racing') startInterval(r);
       });
     } catch(e) {}
   })();
+  // Set initial ctimer colors (for fresh load with no saved state)
+  ['a','b','c'].forEach(r => {
+    const ctimer = document.getElementById(`ctimer-${r}`);
+    ctimer.style.color = timerColor(races[r].secs);
+  });
   renderAll();
 </script>
 </body>
