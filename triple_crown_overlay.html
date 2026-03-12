@@ -325,7 +325,7 @@
       </div>
       <div class="row">
         <label>Name</label>
-        <input class="name-input" type="text" id="name-a" value="Race A" maxlength="20">
+        <input class="name-input" type="text" id="name-a" value="Daily A" maxlength="20">
       </div>
       <div class="row">
         <label>Position</label>
@@ -349,7 +349,7 @@
       </div>
       <div class="row">
         <label>Name</label>
-        <input class="name-input" type="text" id="name-b" value="Race B" maxlength="20">
+        <input class="name-input" type="text" id="name-b" value="Daily B" maxlength="20">
       </div>
       <div class="row">
         <label>Position</label>
@@ -373,7 +373,7 @@
       </div>
       <div class="row">
         <label>Name</label>
-        <input class="name-input" type="text" id="name-c" value="Race C" maxlength="20">
+        <input class="name-input" type="text" id="name-c" value="Daily C" maxlength="20">
       </div>
       <div class="row">
         <label>Position</label>
@@ -397,9 +397,9 @@
 <script>
   // ── State ──────────────────────────────────────────────
   const races = {
-    a: { state: 'locked', pos: 0, secs: 0, iv: null, name: 'Race A' },
-    b: { state: 'locked', pos: 0, secs: 0, iv: null, name: 'Race B' },
-    c: { state: 'locked', pos: 0, secs: 0, iv: null, name: 'Race C' },
+    a: { state: 'locked', pos: 0, secs: 0, iv: null, name: 'Daily A' },
+    b: { state: 'locked', pos: 0, secs: 0, iv: null, name: 'Daily B' },
+    c: { state: 'locked', pos: 0, secs: 0, iv: null, name: 'Daily C' },
   };
 
   // ── Helpers ────────────────────────────────────────────
@@ -513,7 +513,7 @@
   // Live name update
   ['a','b','c'].forEach(r => {
     document.getElementById(`name-${r}`).addEventListener('input', () => {
-      races[r].name = document.getElementById(`name-${r}`).value || `Race ${r.toUpperCase()}`;
+      races[r].name = document.getElementById(`name-${r}`).value || `Daily ${r.toUpperCase()}`;
       renderPill(r);
     });
   });
