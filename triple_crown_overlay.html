@@ -239,6 +239,17 @@
   }
   .row label { color: #607888; min-width: 58px; }
 
+  .name-input {
+    flex: 1;
+    background: #080f18;
+    border: 1px solid rgba(90, 150, 210, 0.25);
+    color: #fff;
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
   .pos-input {
     width: 52px;
     background: #080f18;
@@ -312,6 +323,10 @@
         <button class="btn btn-finish" onclick="finishRace('a')">🏁 Finish</button>
       </div>
       <div class="row">
+        <label>Name</label>
+        <input class="name-input" type="text" id="name-a" value="Race A" maxlength="20">
+      </div>
+      <div class="row">
         <label>Position</label>
         <input class="pos-input" type="number" id="pos-a" min="1" max="20" value="">
         <span id="pos-ord-a" style="color:#8aaccc;font-size:12px;font-weight:700;"></span>
@@ -332,6 +347,10 @@
         <button class="btn btn-finish" onclick="finishRace('b')">🏁 Finish</button>
       </div>
       <div class="row">
+        <label>Name</label>
+        <input class="name-input" type="text" id="name-b" value="Race B" maxlength="20">
+      </div>
+      <div class="row">
         <label>Position</label>
         <input class="pos-input" type="number" id="pos-b" min="1" max="20" value="">
         <span id="pos-ord-b" style="color:#8aaccc;font-size:12px;font-weight:700;"></span>
@@ -350,6 +369,10 @@
         <button class="btn btn-lock"   onclick="setLocked('c')">🔒 Lock</button>
         <button class="btn btn-start"  onclick="startRace('c')">▶ Start</button>
         <button class="btn btn-finish" onclick="finishRace('c')">🏁 Finish</button>
+      </div>
+      <div class="row">
+        <label>Name</label>
+        <input class="name-input" type="text" id="name-c" value="Race C" maxlength="20">
       </div>
       <div class="row">
         <label>Position</label>
@@ -373,9 +396,9 @@
 <script>
   // ── State ──────────────────────────────────────────────
   const races = {
-    a: { state: 'locked', pos: 0, secs: 0, iv: null },
-    b: { state: 'locked', pos: 0, secs: 0, iv: null },
-    c: { state: 'locked', pos: 0, secs: 0, iv: null },
+    a: { state: 'locked', pos: 0, secs: 0, iv: null, name: 'Race A' },
+    b: { state: 'locked', pos: 0, secs: 0, iv: null, name: 'Race B' },
+    c: { state: 'locked', pos: 0, secs: 0, iv: null, name: 'Race C' },
   };
 
   // ── Helpers ────────────────────────────────────────────
@@ -396,7 +419,7 @@
   function renderPill(r) {
     const el  = document.getElementById(`pill-${r}`);
     const d   = races[r];
-    const lbl = `RACE ${r.toUpperCase()}`;
+    const lbl = races[r].name.toUpperCase();
 
     if (d.state === 'locked') {
       el.className = 'pill is-locked';
@@ -485,6 +508,14 @@
     document.getElementById(`ctimer-${r}`).textContent = '00:00:00';
     renderPill(r);
   }
+
+  // Live name update
+  ['a','b','c'].forEach(r => {
+    document.getElementById(`name-${r}`).addEventListener('input', () => {
+      races[r].name = document.getElementById(`name-${r}`).value || `Race ${r.toUpperCase()}`;
+      renderPill(r);
+    });
+  });
 
   // Live position update while racing / finished
   ['a','b','c'].forEach(r => {
