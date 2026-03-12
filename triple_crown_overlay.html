@@ -26,21 +26,21 @@
   #overlay {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 8px;
+    gap: 0.75vw;
+    padding: 0.75vw 1vw;
     width: fit-content;
   }
 
   .pill {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 1vw;
     background: rgba(12, 22, 36, 0.80);
     border: 1px solid rgba(90, 150, 210, 0.18);
-    border-radius: 12px;
-    padding: 0 0 0 10px;
-    height: 32px;
-    min-width: 140px;
+    border-radius: 1.5vw;
+    padding: 0 0 0 1.25vw;
+    height: 4vw;
+    min-width: 17.5vw;
   }
 
   .pill.is-locked {
@@ -51,28 +51,28 @@
   /* State indicator — blue square (locked/finished) or green play arrow (racing) */
   .si {
     flex-shrink: 0;
-    width: 10px;
-    height: 10px;
-    border-radius: 2px;
+    width: 1.25vw;
+    height: 1.25vw;
+    border-radius: 0.25vw;
   }
   .si.locked, .si.finished { background: #4a8ecc; }
   .si.racing {
     width: 0; height: 0;
     background: transparent;
     border-style: solid;
-    border-width: 6px 0 6px 11px;
+    border-width: 0.75vw 0 0.75vw 1.375vw;
     border-color: transparent transparent transparent #22dd44;
     border-radius: 0;
   }
 
   .race-name {
-    font-size: 18px;
+    font-size: 2.25vw;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 0.125vw;
     text-transform: uppercase;
     white-space: nowrap;
     color: #ffffff;
-    transform: translateY(2px);
+    transform: translateY(0.25vw);
   }
   .race-name.dim { color: #ffffff; }
 
@@ -81,10 +81,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
-    padding: 0 9px;
-    height: 24px;
-    font-size: 17px;
+    border-radius: 0.75vw;
+    padding: 0 1.125vw;
+    height: 3vw;
+    font-size: 2.125vw;
     font-weight: 800;
     white-space: nowrap;
     line-height: 1;
@@ -95,25 +95,25 @@
 
   .race-timer {
     font-family: 'Eurostile', 'Courier New', monospace;
-    font-size: 17px;
+    font-size: 2.125vw;
     font-weight: 700;
     color: #22ee55;
-    letter-spacing: 1px;
+    letter-spacing: 0.125vw;
     white-space: nowrap;
-    transform: translateY(2px);
+    transform: translateY(0.25vw);
   }
 
-  .icon { font-size: 20px; line-height: 1; }
+  .icon { font-size: 2.5vw; line-height: 1; }
   .lock-box {
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(0, 0, 0, 0.35);
-    border-radius: 0 10px 10px 0;
-    padding: 0 14px;
+    border-radius: 0 1.25vw 1.25vw 0;
+    padding: 0 1.75vw;
     height: 100%;
     margin-left: auto;
-    font-size: 18px;
+    font-size: 2.25vw;
     line-height: 1;
     overflow: hidden;
   }
@@ -123,11 +123,11 @@
     align-items: center;
     justify-content: center;
     background: rgba(0, 0, 0, 0.35);
-    border-radius: 0 10px 10px 0;
-    padding: 0 14px;
+    border-radius: 0 1.25vw 1.25vw 0;
+    padding: 0 1.75vw;
     height: 100%;
     margin-left: auto;
-    font-size: 28px;
+    font-size: 3.5vw;
     line-height: 1;
     overflow: hidden;
     position: relative;
@@ -159,8 +159,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding-right: 12px;
+    gap: 1vw;
+    padding-right: 1.5vw;
     margin-left: auto;
     align-self: stretch;
   }
