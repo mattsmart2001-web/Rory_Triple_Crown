@@ -414,9 +414,8 @@
   // ── Helpers ────────────────────────────────────────────
   function ordinal(n) {
     n = parseInt(n) || 1;
-    const s = ['th','st','nd','rd'];
-    const v = n % 100;
-    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+    const special = {1:'rd',2:'th',3:'th',4:'rd',5:'st',6:'rd',7:'st',8:'nd',9:'st',10:'nd',11:'st',12:'nd',13:'rd',14:'st',15:'rd'};
+    return n + (special[n] || 'th');
   }
 
   function pad(v) { return String(v).padStart(2, '0'); }
